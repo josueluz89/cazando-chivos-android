@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.CalendarContract
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -45,9 +47,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.cazandochivos.app.R
 import com.cazandochivos.app.data.db.EventoEntity
 import com.cazandochivos.app.ui.theme.WhatsApp
 import com.cazandochivos.app.ui.theme.WhatsAppTinta
@@ -120,6 +124,32 @@ fun DetalleEventoScreen(
                             contentScale = ContentScale.FillWidth
                         )
                         Spacer(Modifier.height(16.dp))
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(140.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_ticket),
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(44.dp)
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                Text(
+                                    text = e.bar,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                        Spacer(Modifier.height(16.dp))
                     }
                     if (Fechas.esHoy(e.fecha)) {
                         Text(
@@ -136,11 +166,19 @@ fun DetalleEventoScreen(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "${Fechas.larga(e.fecha)} · ${e.hora}",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_clock),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.secondary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = " ${Fechas.larga(e.fecha)} · ${e.hora}",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                     Spacer(Modifier.height(12.dp))
                     Row(
                         modifier = Modifier
@@ -151,7 +189,7 @@ fun DetalleEventoScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Filled.LocationOn,
+                            painter = painterResource(R.drawable.ic_pin),
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.secondary
                         )
@@ -171,10 +209,18 @@ fun DetalleEventoScreen(
                         }
                     }
                     Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Cover: ${e.cover.ifBlank { "Por confirmar" }}",
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_ticket),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = " Cover: ${e.cover.ifBlank { "Por confirmar" }}",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                     Spacer(Modifier.height(20.dp))
                     Button(
                         onClick = { comoLlegar(context, e) },
@@ -237,8 +283,18 @@ fun DetalleEventoScreen(
 }
 
 private fun comoLlegar(context: Context, e: EventoEntity) {
-    val q = Uri.encode("${e.bar}, ${e.direccion}")
-    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$q")))
+    val q = Uri.encode("${e.bar}, ${e.direccion}, Costa Rica")
+    val geo = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=$q"))
+    try {
+        context.startActivity(geo)
+    } catch (_: Exception) {
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://www.google.com/maps/search/?api=1&query=$q")
+            )
+        )
+    }
 }
 
 private fun compartir(context: Context, e: EventoEntity) {

@@ -37,6 +37,7 @@ data class LocalEntity(
     @PrimaryKey val nombre: String,
     val direccion: String,
     val estilo: String,
+    val telefono: String,
     val historialJson: String,
     val favorito: Boolean = false
 ) {

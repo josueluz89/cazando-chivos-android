@@ -32,10 +32,11 @@ class ChivosRepository(
     suspend fun refresh(): Result<String> = try {
         val dto = api.obtenerDatos()
         db.withTransaction {
+            val telefonos = dto.locales.associate { it.nombre to (it.telefono.orEmpty()) }
             val favEventos = db.eventoDao().favoritosIds().toSet()
             val entidades = dto.eventos
                 .filter { it.banda.isNotBlank() && it.bar.isNotBlank() && it.fecha.isNotBlank() }
-                .map { it.aEntidad(favEventos.contains(idEvento(it))) }
+                .map { it.aEntidad(favEventos.contains(idEvento(it)), telefonos[it.bar].orEmpty()) }
             db.eventoDao().borrarTodos()
             db.eventoDao().insertarTodos(entidades)
 
@@ -74,18 +75,18 @@ class ChivosRepository(
         fun idEvento(dto: EventoDto): String =
             "${dto.bar.trim().lowercase()}|${dto.fecha}|${dto.banda.trim().lowercase()}"
 
-        private fun EventoDto.aEntidad(favorito: Boolean) = EventoEntity(
+        private fun EventoDto.aEntidad(favorito: Boolean, telefonoBar: String) = EventoEntity(
             id = idEvento(this),
             banda = banda,
             bar = bar,
             fecha = fecha,
             hora = hora.ifBlank { "Por confirmar" },
             cover = cover,
-            flyer = flyer,
+            flyer = resolverFlyer(flyer),
             direccion = direccion,
             region = region,
             fuente = fuente,
-            telefono = telefono ?: "",
+            telefono = (telefono ?: "").ifBlank { telefonoBar },
             favorito = favorito
         )
 
@@ -93,8 +94,17 @@ class ChivosRepository(
             nombre = nombre,
             direccion = direccion,
             estilo = estilo,
+            telefono = telefono ?: "",
             historialJson = historialAJson(historial),
             favorito = favorito
         )
+
+        /** Los flyers vienen como ruta relativa ("flyers/x.jpg"); se resuelven a URL absoluta. */
+        private fun resolverFlyer(flyer: String): String {
+            val f = flyer.trim()
+            if (f.isBlank()) return ""
+            if (f.startsWith("http://") || f.startsWith("https://")) return f
+            return "https://josueluz89.github.io/cazando-chivos/${f.trimStart('/')}"
+        }
     }
 }

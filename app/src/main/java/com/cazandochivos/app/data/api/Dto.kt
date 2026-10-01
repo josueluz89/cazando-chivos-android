@@ -27,5 +27,6 @@ data class LocalDto(
     @SerializedName("nombre") val nombre: String = "",
     @SerializedName("direccion") val direccion: String = "",
     @SerializedName("estilo") val estilo: String = "",
+    @SerializedName("telefono") val telefono: String? = null,
     @SerializedName("historial") val historial: List<String> = emptyList()
 )
