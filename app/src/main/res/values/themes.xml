@@ -6,4 +6,11 @@
         <item name="android:navigationBarColor">@color/fondo</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
+
+    <style name="Theme.CazandoChivos.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/fondo</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/logo_splash</item>
+        <item name="windowSplashScreenAnimationDuration">800</item>
+        <item name="postSplashScreenTheme">@style/Theme.CazandoChivos</item>
+    </style>
 </resources>
