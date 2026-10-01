@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cazando Chivos</string>
+    <string name="canal_chivos_nombre">Chivos de hoy</string>
+    <string name="canal_chivos_desc">Avisa cuando hay rock en vivo hoy en el GAM</string>
+</resources>
