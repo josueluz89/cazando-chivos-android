@@ -1,0 +1,60 @@
+name: build-apk
+
+# En push a main: compila el APK debug y lo deja como artifact.
+# En tags v* (ej. v1.0.0): además crea un GitHub Release con el APK.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install platform + build-tools
+        run: |
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Install Gradle 8.7
+        run: |
+          curl -sL https://services.gradle.org/distributions/gradle-8.7-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          echo "/tmp/gradle-8.7/bin" >> $GITHUB_PATH
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --no-daemon
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cazando-chivos-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cazando-chivos-debug
+          path: dist
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/app-debug.apk
+          generate_release_notes: true
